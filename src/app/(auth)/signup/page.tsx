@@ -1,8 +1,10 @@
 import Colors from '@/constants/Colors';
+import { supabase } from '@/src/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+
 
 export default function Signup() {
 
@@ -11,8 +13,29 @@ export default function Signup() {
     const [password, setPassword] = useState(''); 
     const [loading, setLoading] = useState(false);
 
-    const handleSignup = () => {
-        console.log('Cadastrando usuário:', { name, email, password });
+    async function handleSignup () {
+        setLoading(true);
+
+        const {data, error} = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options:{
+                data:{
+                    name: name
+                }
+            }
+            
+        })
+
+        if(error){
+            Alert.alert('Error', error.message)
+            setLoading(false);
+            return;
+        }
+
+        setLoading(false);
+        router.replace('/(auth)/signin/page')
+
     }
 
     return (
@@ -68,7 +91,9 @@ export default function Signup() {
                             />
                         </View>
                         <Pressable style={styles.button} onPress={handleSignup}>
-                            <Text style={styles.buttonText}>Cadastrar</Text>
+                            <Text style={styles.buttonText}>
+                                {loading ? 'Carregando..': 'Cadastrar'}
+                                </Text>
                         </Pressable>
 
                     </View>
